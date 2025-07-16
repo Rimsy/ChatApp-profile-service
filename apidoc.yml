@@ -1,0 +1,90 @@
+openapi: 3.0.0
+info:
+  title: Chat App Profile API
+  version: 1.0.0
+paths:
+  /profiles/:
+    post:
+      summary: Create a new profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileCreate'
+      responses:
+        '200':
+          description: Profile created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileOut'
+  /profiles/{profile_id}:
+    get:
+      summary: Get profile by ID
+      parameters:
+        - in: path
+          name: profile_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileOut'
+    put:
+      summary: Update profile by ID
+      parameters:
+        - in: path
+          name: profile_id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileCreate'
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileOut'
+    delete:
+      summary: Delete profile by ID
+      parameters:
+        - in: path
+          name: profile_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Profile deleted
+components:
+  schemas:
+    ProfileCreate:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+        bio:
+          type: string
+    ProfileOut:
+      allOf:
+        - $ref: '#/components/schemas/ProfileCreate'
+        - type: object
+          properties:
+            id:
+              type: integer
