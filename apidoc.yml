@@ -1,90 +1,202 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  title: Chat App Profile API
+  title: Profile Service API
   version: 1.0.0
-paths:
-  /profiles/:
-    post:
-      summary: Create a new profile
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProfileCreate'
-      responses:
-        '200':
-          description: Profile created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProfileOut'
-  /profiles/{profile_id}:
-    get:
-      summary: Get profile by ID
-      parameters:
-        - in: path
-          name: profile_id
-          schema:
-            type: integer
-          required: true
-      responses:
-        '200':
-          description: Profile data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProfileOut'
-    put:
-      summary: Update profile by ID
-      parameters:
-        - in: path
-          name: profile_id
-          schema:
-            type: integer
-          required: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProfileCreate'
-      responses:
-        '200':
-          description: Updated profile
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProfileOut'
-    delete:
-      summary: Delete profile by ID
-      parameters:
-        - in: path
-          name: profile_id
-          schema:
-            type: integer
-          required: true
-      responses:
-        '200':
-          description: Profile deleted
+  description: CRUD operations for user profiles.
+servers:
+  - url: https://api.chatapp.com
+    description: Production server
+  - url: https://staging.api.chatapp.com
+    description: Staging server
 components:
   schemas:
-    ProfileCreate:
+    UserProfile:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
         username:
           type: string
-        email:
+        displayName:
           type: string
-          format: email
-        full_name:
+        avatarUrl:
           type: string
-        bio:
+          format: uri
+        statusMessage:
           type: string
-    ProfileOut:
-      allOf:
-        - $ref: '#/components/schemas/ProfileCreate'
-        - type: object
-          properties:
-            id:
-              type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - username
+        - displayName
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      required:
+        - code
+        - message
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication required or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+paths:
+  /profiles:
+    get:
+      summary: List all user profiles
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of user profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: Create a new user profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                displayName:
+                  type: string
+                avatarUrl:
+                  type: string
+                statusMessage:
+                  type: string
+              required:
+                - username
+                - displayName
+      responses:
+        '201':
+          description: Profile created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /profiles/{id}:
+    get:
+      summary: Get user profile by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        '200':
+          description: User profile found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Update an existing user profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                avatarUrl:
+                  type: string
+                statusMessage:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      summary: Delete a user profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        '204':
+          description: Profile deleted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
