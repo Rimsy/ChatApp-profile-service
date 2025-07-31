@@ -46,7 +46,7 @@ All services are containerized (Docker) and deployed in a Kubernetes cluster. Se
 #### Profile Service
 
 * **Responsibility**: Create, read, update, delete user profiles.
-* **Tech Stack**: Java Spring Boot, PostgreSQL.
+* **Tech Stack**: Python FastAPI, PostgreSQL.
 * **Endpoints**: `/profiles`, `/profiles/{id}`.
 * **Auth Guard**: Validates incoming JWT via Auth Service.
 * **Data Model**:
