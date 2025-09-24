@@ -1,0 +1,2 @@
+class UnautherizedException(Error):
+    pass
