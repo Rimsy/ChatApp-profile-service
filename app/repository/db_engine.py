@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = "mysql+pymysql://user:password@localhost:3306/chatapp_db"
+# Align with docker-compose (MYSQL_DATABASE: Chatapp_Db)
+DATABASE_URL = "mysql+pymysql://root:Pass123@localhost:3307/Chatapp_Db"
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def get_db():

@@ -15,17 +15,28 @@ def get_profiles():
 
 @router.post("/profiles", response_model=UserProfile,status_code=201)
 def create_profile(profile: CreateUserProfileRequest):
-    return ProfileService.update_profiles()
+    created = ProfileService.create_profiles(profile)
+    if not created:
+        raise HTTPException(status_code=409, detail="Username already exists")
+    return UserProfile.model_validate(created)
 
 @router.get("/profiles/{id}",response_model=UserProfile)
 def get_profile_by_id(id:str):
-    return ProfileService.get_profiles_by_id()
+    result = ProfileService.get_profiles_by_id(id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return UserProfile.model_validate(result)
 
 @router.put("/profiles/{id}",response_model=UserProfile)
 def update_profile(id:str, profile :UpdateUserProfileRequest):
-    return ProfileService.update_profile
+    updated = ProfileService.update_profile(id, profile)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return UserProfile.model_validate(updated)
 @router.delete("/profiles/{id}", status_code= status.HTTP_204_NO_CONTENT)
 def delete_profile(id:str):
-    
-    return
+    deleted = ProfileService.delete_profiles(id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return None
 
