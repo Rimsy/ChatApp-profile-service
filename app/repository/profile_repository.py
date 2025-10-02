@@ -5,12 +5,22 @@ from app.api.models.create_user_profile_request import CreateUserProfileRequest
 from app.api.models.update_user_profile_request import UpdateUserProfileRequest
 import uuid
 from app.repository.db_engine import SessionLocal
-
+from app.exception import (
+    MandatoryFieldMissingError,
+    ProfileNotFoundException,
+    DuplicateUserNameException,
+)
 
 class UserProfilesRepository:
     def create_profile(self, profile: CreateUserProfileRequest):
+        if not profile.username:
+            raise MandatoryFieldMissingError("username")
         db: Session = SessionLocal()
         try:
+            existing_user = db.query(UserProfilesTable).filter(UserProfilesTable.username == profile.username).first()
+            if existing_user:
+                raise DuplicateUserNameException(profile.username)
+
             db_profile = UserProfilesTable(
                 id=str(uuid.uuid4()),
                 username=profile.username,
@@ -24,7 +34,7 @@ class UserProfilesRepository:
             return db_profile
         except IntegrityError:
             db.rollback()
-            return None
+            raise
         finally:
             db.close()
 
@@ -38,7 +48,10 @@ class UserProfilesRepository:
     def get_profile_by_id(self, profile_id: str):
         db: Session = SessionLocal()
         try:
-            return db.query(UserProfilesTable).filter(UserProfilesTable.id == profile_id).first()
+            profile = db.query(UserProfilesTable).filter(UserProfilesTable.id == profile_id).first()
+            if not profile:
+                raise ProfileNotFoundException(profile_id)
+            return profile
         finally:
             db.close()
 
@@ -47,7 +60,7 @@ class UserProfilesRepository:
         try:
             db_profile = db.query(UserProfilesTable).filter(UserProfilesTable.id == profile_id).first()
             if not db_profile:
-                return None
+                raise ProfileNotFoundException(profile_id)
             if profile.displayName is not None:
                 db_profile.display_name = profile.displayName
             if profile.avatarUrl is not None:
@@ -65,7 +78,7 @@ class UserProfilesRepository:
         try:
             db_profile = db.query(UserProfilesTable).filter(UserProfilesTable.id == profile_id).first()
             if not db_profile:
-                return None
+                raise ProfileNotFoundException(profile_id)
             db.delete(db_profile)
             db.commit()
             return db_profile
