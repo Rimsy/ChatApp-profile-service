@@ -39,5 +39,5 @@ class ProfileService:
             )
         return UserProfilesRepository.create_profile(db_profile)
 
-    def delete_profiles():
+    def delete_profiles(id: str):
         return UserProfilesRepository.delete_profile(id)

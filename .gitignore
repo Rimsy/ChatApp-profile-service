@@ -2,3 +2,5 @@ profile_server-env/
 __pycache__/
 **/__pycache__/
 *.py[cod]
+app/__pycache__
+C:\Users\HP\Documents\fastapi-projects\chatApp\ChatApp-profile-service\app\__pycache__
